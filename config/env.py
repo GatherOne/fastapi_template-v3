@@ -1,11 +1,7 @@
 import io
 import os
-import sys
-import argparse
 from contextlib import contextmanager
 from io import StringIO
-from typing import Optional
-
 from dotenv.main import DotEnv
 from pydantic import BaseSettings, Field
 from functools import lru_cache
@@ -78,6 +74,15 @@ class RedisSettings(BaseSettings):
     redis_username: str = Field(None, env="REDIS_USERNAME")
     redis_password: str = Field(None, env="REDIS_PASSWORD")
     redis_database: int = Field(None, env="REDIS_DATABASE")
+    celery_beat_db: int = Field(None, env="CELERY_BEAT_DB")
+
+
+class RabbitMQSettings(BaseSettings):
+    rabbitmq_host: str = Field(None, env="RABBITMQ_HOST")
+    rabbitmq_port: int = Field(None, env="RABBITMQ_PORT")
+    rabbitmq_username: str = Field(None, env="RABBITMQ_USERNAME")
+    rabbitmq_password: str = Field(None, env="RABBITMQ_PASSWORD")
+    rabbitmq_virtual_host: str = Field(None, env="RABBITMQ_VIRTUAL_HOST")
 
 
 class CachePathConfig:
