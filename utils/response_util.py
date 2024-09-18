@@ -1,30 +1,22 @@
 from fastapi import status
-from fastapi.responses import JSONResponse, Response, StreamingResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
 from typing import Any
-from datetime import datetime
 from utils.constant import RET, error_map
 
 
-def MyResponse(*, data: Any = None, msg: str = error_map[RET.OK]) -> Response:
+def MyResponse(*, code: str = RET.OK, msg: str = error_map[RET.OK], total: int = None, data: Any = None, ) -> Response:
+    result = {
+        'code': code,
+        'msg': msg
+    }
+    if total is not None:
+        result['total'] = total
+    if data is not None:
+        result['data'] = data
     return JSONResponse(
         status_code=status.HTTP_200_OK,
-        content=jsonable_encoder(
-            {
-                'code': RET.OK,
-                'msg': msg,
-                'data': data,
-                'success': 'true',
-                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-        )
-    )
-
-
-def streaming_MyResponse(*, data: Any = None):
-    return StreamingResponse(
-        status_code=status.HTTP_200_OK,
-        content=data,
+        content=jsonable_encoder(result)
     )
 
 

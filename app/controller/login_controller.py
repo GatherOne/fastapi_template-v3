@@ -13,7 +13,7 @@ from datetime import timedelta
 loginController = APIRouter()
 
 
-@loginController.post("/loginByAccount", response_model=Token)
+@loginController.post("/loginByAccount")
 @log_decorator(title='用户登录', business_type=0, log_type='login')
 async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = Depends(), query_db: Session = Depends(get_db)):
     captcha_enabled = True if await request.app.state.redis.get(f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:sys.account.captchaEnabled") == 'true' else False
@@ -66,22 +66,22 @@ async def login(request: Request, form_data: CustomOAuth2PasswordRequestForm = D
         return MyResponse(data="", msg=str(e))
 
 
-@loginController.post("/getSmsCode", response_model=SmsCode)
+@loginController.post("/getSmsCode")
 async def get_sms_code(request: Request, user: ResetUserModel, query_db: Session = Depends(get_db)):
     try:
         sms_result = await get_sms_code_services(request, query_db, user)
         if sms_result.is_success:
-            logger.log_info('获取成功')
+            
             return MyResponse(data=sms_result, msg='获取成功')
         else:
-            logger.warning(sms_result.message)
+            logger.log_warning(sms_result.message)
             return MyResponse(data='', msg=sms_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@loginController.post("/forgetPwd", response_model=CrudUserResponse)
+@loginController.post("/forgetPwd")
 async def forget_user_pwd(request: Request, forget_user: ResetUserModel, query_db: Session = Depends(get_db)):
     try:
         forget_user_result = await forget_user_services(request, query_db, forget_user)
@@ -89,18 +89,18 @@ async def forget_user_pwd(request: Request, forget_user: ResetUserModel, query_d
             logger.log_info(forget_user_result.message)
             return MyResponse(data=forget_user_result, msg=forget_user_result.message)
         else:
-            logger.warning(forget_user_result.message)
+            logger.log_warning(forget_user_result.message)
             return MyResponse(data="", msg=forget_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@loginController.post("/getLoginUserInfo", response_model=CurrentUserInfoServiceResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@loginController.post("/getLoginUserInfo", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_login_user_info(request: Request, current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
-        logger.log_info('获取成功')
-        return MyResponse(data=current_user, msg="获取成功")
+        
+        return MyResponse(data=current_user)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))

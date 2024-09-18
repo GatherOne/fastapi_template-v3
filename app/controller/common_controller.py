@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends, File, Form
 from sqlalchemy.orm import Session
+from starlette.responses import StreamingResponse
+
 from config.env import CachePathConfig
 from config.database import get_db
 from app.service.login_service import get_current_user
@@ -72,10 +74,8 @@ async def common_download(request: Request, taskPath: str, taskId: str, filename
         if taskPath not in ['notice']:
             current_user = await get_current_user(request, token, query_db)
             if current_user:
-                logger.log_info('获取成功')
-                return streaming_MyResponse(data=generate_file())
-        logger.log_info('获取成功')
-        return streaming_MyResponse(data=generate_file())
+                return StreamingResponse(content=generate_file())
+        return StreamingResponse(content=generate_file())
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
@@ -86,8 +86,8 @@ async def query_system_config(request: Request, config_key: str):
     try:
         # 获取全量数据
         config_query_result = await ConfigService.query_config_list_from_cache_services(request.app.state.redis, config_key)
-        logger.log_info('获取成功')
-        return MyResponse(data=config_query_result, msg="获取成功")
+        
+        return MyResponse(data=config_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))

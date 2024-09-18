@@ -41,7 +41,7 @@ class ConfigPageObjectResponse(BaseModel):
     """
     参数配置管理列表分页查询返回模型
     """
-    rows: List[Union[ConfigModel, None]] = []
+    data: List[Union[ConfigModel, None]] = []
     page: int
     page_size: int
     total: int

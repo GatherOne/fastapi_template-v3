@@ -15,7 +15,7 @@ from app.annotation.log_annotation import log_decorator
 dictController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@dictController.post("/dictType/get", response_model=DictTypePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
+@dictController.post("/dictType/get", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_type_list(request: Request, dict_type_page_query: DictTypePageObject, query_db: Session = Depends(get_db)):
     try:
         dict_type_query = DictTypeQueryModel(**dict_type_page_query.dict())
@@ -23,8 +23,8 @@ async def get_system_dict_type_list(request: Request, dict_type_page_query: Dict
         dict_type_query_result = DictTypeService.get_dict_type_list_services(query_db, dict_type_query)
         # 分页操作
         dict_type_page_query_result = get_page_obj(dict_type_query_result, dict_type_page_query.page, dict_type_page_query.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=dict_type_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=dict_type_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
@@ -34,14 +34,14 @@ async def get_system_dict_type_list(request: Request, dict_type_page_query: Dict
 async def get_system_all_dict_type(request: Request, dict_type_query: DictTypeQueryModel, query_db: Session = Depends(get_db)):
     try:
         dict_type_query_result = DictTypeService.get_all_dict_type_services(query_db)
-        logger.log_info('获取成功')
-        return MyResponse(data=dict_type_query_result, msg="获取成功")
+        
+        return MyResponse(data=dict_type_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictType/add", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:add'))])
+@dictController.post("/dictType/add", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:add'))])
 @log_decorator(title='字典管理', business_type=1)
 async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -54,14 +54,14 @@ async def add_system_dict_type(request: Request, add_dict_type: DictTypeModel, q
             logger.log_info(add_dict_type_result.message)
             return MyResponse(data=add_dict_type_result, msg=add_dict_type_result.message)
         else:
-            logger.warning(add_dict_type_result.message)
+            logger.log_warning(add_dict_type_result.message)
             return MyResponse(data="", msg=add_dict_type_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.patch("/dictType/edit", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@dictController.patch("/dictType/edit", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
 @log_decorator(title='字典管理', business_type=2)
 async def edit_system_dict_type(request: Request, edit_dict_type: DictTypeModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -72,14 +72,14 @@ async def edit_system_dict_type(request: Request, edit_dict_type: DictTypeModel,
             logger.log_info(edit_dict_type_result.message)
             return MyResponse(data=edit_dict_type_result, msg=edit_dict_type_result.message)
         else:
-            logger.warning(edit_dict_type_result.message)
+            logger.log_warning(edit_dict_type_result.message)
             return MyResponse(data="", msg=edit_dict_type_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictType/delete", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
+@dictController.post("/dictType/delete", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
 @log_decorator(title='字典管理', business_type=3)
 async def delete_system_dict_type(request: Request, delete_dict_type: DeleteDictTypeModel, query_db: Session = Depends(get_db)):
     try:
@@ -88,14 +88,14 @@ async def delete_system_dict_type(request: Request, delete_dict_type: DeleteDict
             logger.log_info(delete_dict_type_result.message)
             return MyResponse(data=delete_dict_type_result, msg=delete_dict_type_result.message)
         else:
-            logger.warning(delete_dict_type_result.message)
+            logger.log_warning(delete_dict_type_result.message)
             return MyResponse(data="", msg=delete_dict_type_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.get("/dictType/{dict_id}", response_model=DictTypeModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
+@dictController.get("/dictType/{dict_id}", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
 async def query_detail_system_dict_type(request: Request, dict_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dict_type_result = DictTypeService.detail_dict_type_services(query_db, dict_id)
@@ -114,13 +114,13 @@ async def export_system_dict_type_list(request: Request, dict_type_query: DictTy
         dict_type_query_result = DictTypeService.get_dict_type_list_services(query_db, dict_type_query)
         dict_type_export_result = DictTypeService.export_dict_type_list_services(dict_type_query_result)
         logger.log_info('导出成功')
-        return streaming_MyResponse(data=bytes2file_response(dict_type_export_result))
+        return StreamingResponse(content=bytes2file_response(dict_type_export_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictType/refresh", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@dictController.post("/dictType/refresh", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
 @log_decorator(title='字典管理', business_type=2)
 async def refresh_system_dict(request: Request, query_db: Session = Depends(get_db)):
     try:
@@ -129,14 +129,14 @@ async def refresh_system_dict(request: Request, query_db: Session = Depends(get_
             logger.log_info(refresh_dict_result.message)
             return MyResponse(data=refresh_dict_result, msg=refresh_dict_result.message)
         else:
-            logger.warning(refresh_dict_result.message)
+            logger.log_warning(refresh_dict_result.message)
             return MyResponse(data="", msg=refresh_dict_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictData/get", response_model=DictDataPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
+@dictController.post("/dictData/get", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:list'))])
 async def get_system_dict_data_list(request: Request, dict_data_page_query: DictDataPageObject, query_db: Session = Depends(get_db)):
     try:
         dict_data_query = DictDataModel(**dict_data_page_query.dict())
@@ -144,8 +144,8 @@ async def get_system_dict_data_list(request: Request, dict_data_page_query: Dict
         dict_data_query_result = DictDataService.get_dict_data_list_services(query_db, dict_data_query)
         # 分页操作
         dict_data_page_query_result = get_page_obj(dict_data_query_result, dict_data_page_query.page, dict_data_page_query.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=dict_data_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=dict_data_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
@@ -156,14 +156,14 @@ async def query_system_dict_data_list(request: Request, dict_type: str, query_db
     try:
         # 获取全量数据
         dict_data_query_result = await DictDataService.query_dict_data_list_from_cache_services(request.app.state.redis, dict_type)
-        logger.log_info('获取成功')
-        return MyResponse(data=dict_data_query_result, msg="获取成功")
+        
+        return MyResponse(data=dict_data_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictData/add", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:add'))])
+@dictController.post("/dictData/add", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:add'))])
 @log_decorator(title='字典管理', business_type=1)
 async def add_system_dict_data(request: Request, add_dict_data: DictDataModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -176,14 +176,14 @@ async def add_system_dict_data(request: Request, add_dict_data: DictDataModel, q
             logger.log_info(add_dict_data_result.message)
             return MyResponse(data=add_dict_data_result, msg=add_dict_data_result.message)
         else:
-            logger.warning(add_dict_data_result.message)
+            logger.log_warning(add_dict_data_result.message)
             return MyResponse(data="", msg=add_dict_data_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.patch("/dictData/edit", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
+@dictController.patch("/dictData/edit", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:edit'))])
 @log_decorator(title='字典管理', business_type=2)
 async def edit_system_dict_data(request: Request, edit_dict_data: DictDataModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -194,14 +194,14 @@ async def edit_system_dict_data(request: Request, edit_dict_data: DictDataModel,
             logger.log_info(edit_dict_data_result.message)
             return MyResponse(data=edit_dict_data_result, msg=edit_dict_data_result.message)
         else:
-            logger.warning(edit_dict_data_result.message)
+            logger.log_warning(edit_dict_data_result.message)
             return MyResponse(data="", msg=edit_dict_data_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.post("/dictData/delete", response_model=CrudDictResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
+@dictController.post("/dictData/delete", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:remove'))])
 @log_decorator(title='字典管理', business_type=3)
 async def delete_system_dict_data(request: Request, delete_dict_data: DeleteDictDataModel, query_db: Session = Depends(get_db)):
     try:
@@ -210,14 +210,14 @@ async def delete_system_dict_data(request: Request, delete_dict_data: DeleteDict
             logger.log_info(delete_dict_data_result.message)
             return MyResponse(data=delete_dict_data_result, msg=delete_dict_data_result.message)
         else:
-            logger.warning(delete_dict_data_result.message)
+            logger.log_warning(delete_dict_data_result.message)
             return MyResponse(data="", msg=delete_dict_data_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@dictController.get("/dictData/{dict_code}", response_model=DictDataModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
+@dictController.get("/dictData/{dict_code}", dependencies=[Depends(CheckUserInterfaceAuth('system:dict:query'))])
 async def query_detail_system_dict_data(request: Request, dict_code: int, query_db: Session = Depends(get_db)):
     try:
         detail_dict_data_result = DictDataService.detail_dict_data_services(query_db, dict_code)
@@ -236,7 +236,7 @@ async def export_system_dict_data_list(request: Request, dict_data_query: DictDa
         dict_data_query_result = DictDataService.get_dict_data_list_services(query_db, dict_data_query)
         dict_data_export_result = DictDataService.export_dict_data_list_services(dict_data_query_result)
         logger.log_info('导出成功')
-        return streaming_MyResponse(data=bytes2file_response(dict_data_export_result))
+        return StreamingResponse(content=bytes2file_response(dict_data_export_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))

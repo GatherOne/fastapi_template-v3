@@ -1,12 +1,11 @@
-from functools import wraps, lru_cache
-from fastapi import Request
-from fastapi.responses import JSONResponse, ORJSONResponse, UJSONResponse
 import inspect
 import os
 import json
 import time
+from functools import wraps, lru_cache
+from fastapi import Request
+from fastapi.responses import JSONResponse, ORJSONResponse, UJSONResponse
 from datetime import datetime
-import requests
 from user_agents import parse
 from typing import Optional
 from app.service.login_service import get_current_user

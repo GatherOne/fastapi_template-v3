@@ -15,40 +15,40 @@ from app.annotation.log_annotation import log_decorator
 deptController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@deptController.post("/dept/tree", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@deptController.post("/dept/tree", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_dept_tree(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
         dept_query_result = DeptService.get_dept_tree_services(query_db, dept_query, data_scope_sql)
-        logger.log_info('获取成功')
-        return MyResponse(data=dept_query_result, msg="获取成功")
+        
+        return MyResponse(data=dept_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.post("/dept/forEditOption", response_model=DeptTree, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@deptController.post("/dept/forEditOption", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_dept_tree_for_edit_option(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
         dept_query_result = DeptService.get_dept_tree_for_edit_option_services(query_db, dept_query, data_scope_sql)
-        logger.log_info('获取成功')
-        return MyResponse(data=dept_query_result, msg="获取成功")
+        
+        return MyResponse(data=dept_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.post("/dept/get", response_model=DeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:list'))])
+@deptController.post("/dept/get", dependencies=[Depends(CheckUserInterfaceAuth('system:dept:list'))])
 async def get_system_dept_list(request: Request, dept_query: DeptModel, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysDept'))):
     try:
         dept_query_result = DeptService.get_dept_list_services(query_db, dept_query, data_scope_sql)
-        logger.log_info('获取成功')
-        return MyResponse(data=dept_query_result, msg="获取成功")
+        
+        return MyResponse(data=dept_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.post("/dept/add", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:add'))])
+@deptController.post("/dept/add", dependencies=[Depends(CheckUserInterfaceAuth('system:dept:add'))])
 @log_decorator(title='部门管理', business_type=1)
 async def add_system_dept(request: Request, add_dept: DeptModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -61,14 +61,14 @@ async def add_system_dept(request: Request, add_dept: DeptModel, query_db: Sessi
             logger.log_info(add_dept_result.message)
             return MyResponse(data=add_dept_result, msg=add_dept_result.message)
         else:
-            logger.warning(add_dept_result.message)
+            logger.log_warning(add_dept_result.message)
             return MyResponse(data="", msg=add_dept_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.patch("/dept/edit", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:edit'))])
+@deptController.patch("/dept/edit", dependencies=[Depends(CheckUserInterfaceAuth('system:dept:edit'))])
 @log_decorator(title='部门管理', business_type=2)
 async def edit_system_dept(request: Request, edit_dept: DeptModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -79,14 +79,14 @@ async def edit_system_dept(request: Request, edit_dept: DeptModel, query_db: Ses
             logger.log_info(edit_dept_result.message)
             return MyResponse(data=edit_dept_result, msg=edit_dept_result.message)
         else:
-            logger.warning(edit_dept_result.message)
+            logger.log_warning(edit_dept_result.message)
             return MyResponse(data="", msg=edit_dept_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.post("/dept/delete", response_model=CrudDeptResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:remove'))])
+@deptController.post("/dept/delete", dependencies=[Depends(CheckUserInterfaceAuth('system:dept:remove'))])
 @log_decorator(title='部门管理', business_type=3)
 async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -97,14 +97,14 @@ async def delete_system_dept(request: Request, delete_dept: DeleteDeptModel, que
             logger.log_info(delete_dept_result.message)
             return MyResponse(data=delete_dept_result, msg=delete_dept_result.message)
         else:
-            logger.warning(delete_dept_result.message)
+            logger.log_warning(delete_dept_result.message)
             return MyResponse(data="", msg=delete_dept_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@deptController.get("/dept/{dept_id}", response_model=DeptModel, dependencies=[Depends(CheckUserInterfaceAuth('system:dept:query'))])
+@deptController.get("/dept/{dept_id}", dependencies=[Depends(CheckUserInterfaceAuth('system:dept:query'))])
 async def query_detail_system_dept(request: Request, dept_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_dept_result = DeptService.detail_dept_services(query_db, dept_id)

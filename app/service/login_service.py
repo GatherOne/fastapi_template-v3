@@ -54,7 +54,7 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
     :raise: 令牌异常AuthException
     """
     # if token[:6] != 'Bearer':
-    #     logger.warning("用户token不合法")
+    #     logger.log_warning("用户token不合法")
     #     raise AuthException(data="", msg="用户token不合法")
     try:
         if token.startswith('Bearer'):
@@ -63,15 +63,15 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
         user_id: str = payload.get("user_id")
         session_id: str = payload.get("session_id")
         if user_id is None:
-            logger.warning("用户token不合法")
+            logger.log_warning("用户token不合法")
             raise AuthException(data="", message="用户token不合法")
         token_data = TokenData(user_id=int(user_id))
     except JWTError:
-        logger.warning("用户token已失效，请重新登录")
+        logger.log_warning("用户token已失效，请重新登录")
         raise AuthException(data="", message="用户token已失效，请重新登录")
     user = UserDao.get_user_by_id(result_db, user_id=token_data.user_id)
     if user is None:
-        logger.warning("用户token不合法")
+        logger.log_warning("用户token不合法")
         raise AuthException(data="", message="用户token不合法")
     if AppConfig.app_same_time_login:
         redis_token = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCESS_TOKEN.get('key')}:{session_id}")
@@ -94,7 +94,7 @@ async def get_current_user(request: Request = Request, token: str = Depends(oaut
             menu=user.user_menu_info
         )
     else:
-        logger.warning("用户token已失效，请重新登录")
+        logger.log_warning("用户token已失效，请重新登录")
         raise AuthException(data="", message="用户token已失效，请重新登录")
 
 
@@ -170,7 +170,7 @@ async def check_login_ip(request: Request, login_user: UserLogin):
         f"{RedisInitKeyConfig.SYS_CONFIG.get('key')}:sys.login.blackIPList")
     black_ip_list = black_ip_value.split(',') if black_ip_value else []
     if login_user.login_info.get('ipaddr') in black_ip_list:
-        logger.warning("当前IP禁止登录")
+        logger.log_warning("当前IP禁止登录")
         raise LoginException(data="", message="当前IP禁止登录")
     return True
 
@@ -184,10 +184,10 @@ async def check_login_captcha(request: Request, login_user: UserLogin):
     """
     captcha_value = await request.app.state.redis.get(f"{RedisInitKeyConfig.CAPTCHA_CODES.get('key')}:{login_user.session_id}")
     if not captcha_value:
-        logger.warning("验证码已失效")
+        logger.log_warning("验证码已失效")
         raise LoginException(data="", message="验证码已失效")
     if login_user.captcha != str(captcha_value):
-        logger.warning("验证码错误")
+        logger.log_warning("验证码错误")
         raise LoginException(data="", message="验证码错误")
     return True
 
@@ -203,7 +203,7 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
     await check_login_ip(request, login_user)
     account_lock = await request.app.state.redis.get(f"{RedisInitKeyConfig.ACCOUNT_LOCK.get('key')}:{login_user.user_name}")
     if login_user.user_name == account_lock:
-        logger.warning("账号已锁定，请稍后再试")
+        logger.log_warning("账号已锁定，请稍后再试")
         raise LoginException(data="", message="账号已锁定，请稍后再试")
     # 判断请求是否来自于api文档
     request_from_swagger = request.headers.get('referer').endswith('docs') if request.headers.get('referer') else False
@@ -215,7 +215,7 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
         await check_login_captcha(request, login_user)
     user = login_by_account(query_db, login_user.user_name)
     if not user:
-        logger.warning("用户不存在")
+        logger.log_warning("用户不存在")
         raise LoginException(data="", message="用户不存在")
     if not PwdUtil.verify_password(login_user.password, user[0].password):
         cache_password_error_count = await request.app.state.redis.get(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
@@ -229,12 +229,12 @@ async def authenticate_user(request: Request, query_db: Session, login_user: Use
             await request.app.state.redis.delete(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
             await request.app.state.redis.set(f"{RedisInitKeyConfig.ACCOUNT_LOCK.get('key')}:{login_user.user_name}", login_user.user_name,
                                               ex=timedelta(minutes=10))
-            logger.warning("10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
+            logger.log_warning("10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
             raise LoginException(data="", message="10分钟内密码已输错超过5次，账号已锁定，请10分钟后再试")
-        logger.warning("密码错误")
+        logger.log_warning("密码错误")
         raise LoginException(data="", message="密码错误")
     if user[0].status == '1':
-        logger.warning("用户已停用")
+        logger.log_warning("用户已停用")
         raise LoginException(data="", message="用户已停用")
     await request.app.state.redis.delete(f"{RedisInitKeyConfig.PASSWORD_ERROR_COUNT.get('key')}:{login_user.user_name}")
     return user

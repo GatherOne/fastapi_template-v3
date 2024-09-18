@@ -18,7 +18,7 @@ from app.annotation.log_annotation import log_decorator
 userController = APIRouter(dependencies=[Depends(get_current_user)])
 
 
-@userController.post("/user/get", response_model=UserPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
+@userController.post("/user/get", dependencies=[Depends(CheckUserInterfaceAuth('system:user:list'))])
 async def get_system_user_list(request: Request, user_page_query: UserPageObject, query_db: Session = Depends(get_db), data_scope_sql: str = Depends(GetDataScope('SysUser'))):
     try:
         user_query = UserQueryModel(**user_page_query.dict())
@@ -26,14 +26,14 @@ async def get_system_user_list(request: Request, user_page_query: UserPageObject
         user_query_result = UserService.get_user_list_services(query_db, user_query, data_scope_sql)
         # 分页操作
         user_page_query_result = get_page_obj(user_query_result, user_page_query.page, user_page_query.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=user_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=user_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/add", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:add'))])
+@userController.post("/user/add", dependencies=[Depends(CheckUserInterfaceAuth('system:user:add'))])
 @log_decorator(title='用户管理', business_type=1)
 async def add_system_user(request: Request, add_user: AddUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -47,14 +47,14 @@ async def add_system_user(request: Request, add_user: AddUserModel, query_db: Se
             logger.log_info(add_user_result.message)
             return MyResponse(data=add_user_result, msg=add_user_result.message)
         else:
-            logger.warning(add_user_result.message)
+            logger.log_warning(add_user_result.message)
             return MyResponse(data="", msg=add_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.patch("/user/edit", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@userController.patch("/user/edit", dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 @log_decorator(title='用户管理', business_type=2)
 async def edit_system_user(request: Request, edit_user: AddUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -65,14 +65,14 @@ async def edit_system_user(request: Request, edit_user: AddUserModel, query_db: 
             logger.log_info(edit_user_result.message)
             return MyResponse(data=edit_user_result, msg=edit_user_result.message)
         else:
-            logger.warning(edit_user_result.message)
+            logger.log_warning(edit_user_result.message)
             return MyResponse(data="", msg=edit_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/delete", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:remove'))])
+@userController.post("/user/delete", dependencies=[Depends(CheckUserInterfaceAuth('system:user:remove'))])
 @log_decorator(title='用户管理', business_type=3)
 async def delete_system_user(request: Request, delete_user: DeleteUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -83,14 +83,14 @@ async def delete_system_user(request: Request, delete_user: DeleteUserModel, que
             logger.log_info(delete_user_result.message)
             return MyResponse(data=delete_user_result, msg=delete_user_result.message)
         else:
-            logger.warning(delete_user_result.message)
+            logger.log_warning(delete_user_result.message)
             return MyResponse(data="", msg=delete_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.get("/user/{user_id}", response_model=UserDetailModel, dependencies=[Depends(CheckUserInterfaceAuth('system:user:query'))])
+@userController.get("/user/{user_id}", dependencies=[Depends(CheckUserInterfaceAuth('system:user:query'))])
 async def query_detail_system_user(request: Request, user_id: int, query_db: Session = Depends(get_db)):
     try:
         delete_user_result = UserService.detail_user_services(query_db, user_id)
@@ -101,7 +101,7 @@ async def query_detail_system_user(request: Request, user_id: int, query_db: Ses
         return MyResponse(data="", msg=str(e))
 
 
-@userController.patch("/user/profile/changeAvatar", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@userController.patch("/user/profile/changeAvatar", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
 async def change_system_user_profile_avatar(request: Request, edit_user: AddUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -127,14 +127,14 @@ async def change_system_user_profile_avatar(request: Request, edit_user: AddUser
             logger.log_info(edit_user_result.message)
             return MyResponse(data=edit_user_result, msg=edit_user_result.message)
         else:
-            logger.warning(edit_user_result.message)
+            logger.log_warning(edit_user_result.message)
             return MyResponse(data="", msg=edit_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.patch("/user/profile/changeInfo", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@userController.patch("/user/profile/changeInfo", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
 async def change_system_user_profile_info(request: Request, edit_user: AddUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -146,14 +146,14 @@ async def change_system_user_profile_info(request: Request, edit_user: AddUserMo
             logger.log_info(edit_user_result.message)
             return MyResponse(data=edit_user_result, msg=edit_user_result.message)
         else:
-            logger.warning(edit_user_result.message)
+            logger.log_warning(edit_user_result.message)
             return MyResponse(data="", msg=edit_user_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.patch("/user/profile/resetPwd", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@userController.patch("/user/profile/resetPwd", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 @log_decorator(title='个人信息', business_type=2)
 async def reset_system_user_password(request: Request, reset_user: ResetUserModel, query_db: Session = Depends(get_db), current_user: CurrentUserInfoServiceResponse = Depends(get_current_user)):
     try:
@@ -167,7 +167,7 @@ async def reset_system_user_password(request: Request, reset_user: ResetUserMode
             logger.log_info(reset_user_result.message)
             return MyResponse(data=reset_user_result, msg=reset_user_result.message)
         else:
-            logger.warning(reset_user_result.message)
+            logger.log_warning(reset_user_result.message)
             return MyResponse(data="", msg=reset_user_result.message)
     except Exception as e:
         logger.exception(e)
@@ -183,7 +183,7 @@ async def batch_import_system_user(request: Request, user_import: ImportUserMode
             logger.log_info(batch_import_result.message)
             return MyResponse(data=batch_import_result, msg=batch_import_result.message)
         else:
-            logger.warning(batch_import_result.message)
+            logger.log_warning(batch_import_result.message)
             return MyResponse(data="", msg=batch_import_result.message)
     except Exception as e:
         logger.exception(e)
@@ -194,8 +194,8 @@ async def batch_import_system_user(request: Request, user_import: ImportUserMode
 async def export_system_user_template(request: Request, query_db: Session = Depends(get_db)):
     try:
         user_import_template_result = UserService.get_user_import_template_services()
-        logger.log_info('获取成功')
-        return streaming_MyResponse(data=bytes2file_response(user_import_template_result))
+        
+        return StreamingResponse(content=bytes2file_response(user_import_template_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
@@ -209,41 +209,41 @@ async def export_system_user_list(request: Request, user_query: UserQueryModel, 
         user_query_result = UserService.get_user_list_services(query_db, user_query, data_scope_sql)
         user_export_result = UserService.export_user_list_services(user_query_result)
         logger.log_info('导出成功')
-        return streaming_MyResponse(data=bytes2file_response(user_export_result))
+        return StreamingResponse(content=bytes2file_response(user_export_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/authRole/allocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@userController.post("/user/authRole/allocatedList", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_allocated_role_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
     try:
         user_role_query = UserRoleQueryModel(**user_role.dict())
         user_role_allocated_query_result = UserService.get_user_role_allocated_list_services(query_db, user_role_query)
         # 分页操作
         user_role_allocated_page_query_result = get_page_obj(user_role_allocated_query_result, user_role.page, user_role.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=user_role_allocated_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=user_role_allocated_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/authRole/unallocatedList", response_model=UserRolePageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('common'))])
+@userController.post("/user/authRole/unallocatedList", dependencies=[Depends(CheckUserInterfaceAuth('common'))])
 async def get_system_unallocated_role_list(request: Request, user_role: UserRolePageObject, query_db: Session = Depends(get_db)):
     try:
         user_role_query = UserRoleQueryModel(**user_role.dict())
         user_role_unallocated_query_result = UserService.get_user_role_unallocated_list_services(query_db, user_role_query)
         # 分页操作
         user_role_unallocated_page_query_result = get_page_obj(user_role_unallocated_query_result, user_role.page, user_role.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=user_role_unallocated_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=user_role_unallocated_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/authRole/selectAll", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@userController.post("/user/authRole/selectAll", dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 @log_decorator(title='用户管理', business_type=4)
 async def add_system_role_user(request: Request, add_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
     try:
@@ -252,14 +252,14 @@ async def add_system_role_user(request: Request, add_user_role: CrudUserRoleMode
             logger.log_info(add_user_role_result.message)
             return MyResponse(data=add_user_role_result, msg=add_user_role_result.message)
         else:
-            logger.warning(add_user_role_result.message)
+            logger.log_warning(add_user_role_result.message)
             return MyResponse(data="", msg=add_user_role_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@userController.post("/user/authRole/cancel", response_model=CrudUserResponse, dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
+@userController.post("/user/authRole/cancel", dependencies=[Depends(CheckUserInterfaceAuth('system:user:edit'))])
 @log_decorator(title='用户管理', business_type=4)
 async def cancel_system_role_user(request: Request, cancel_user_role: CrudUserRoleModel, query_db: Session = Depends(get_db)):
     try:
@@ -268,7 +268,7 @@ async def cancel_system_role_user(request: Request, cancel_user_role: CrudUserRo
             logger.log_info(cancel_user_role_result.message)
             return MyResponse(data=cancel_user_role_result, msg=cancel_user_role_result.message)
         else:
-            logger.warning(cancel_user_role_result.message)
+            logger.log_warning(cancel_user_role_result.message)
             return MyResponse(data="", msg=cancel_user_role_result.message)
     except Exception as e:
         logger.exception(e)

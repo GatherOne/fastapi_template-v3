@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 from fastapi import Depends
+from starlette.responses import StreamingResponse
+
 from config.database import get_db
 from app.service.login_service import get_current_user
 from app.service.log_service import *
@@ -15,7 +17,7 @@ from app.annotation.log_annotation import log_decorator
 logController = APIRouter(prefix='/log', dependencies=[Depends(get_current_user)])
 
 
-@logController.post("/operation/get", response_model=OperLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:list'))])
+@logController.post("/operation/get", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:list'))])
 async def get_system_operation_log_list(request: Request, operation_log_page_query: OperLogPageObject, query_db: Session = Depends(get_db)):
     try:
         operation_log_query = OperLogQueryModel(**operation_log_page_query.dict())
@@ -23,14 +25,14 @@ async def get_system_operation_log_list(request: Request, operation_log_page_que
         operation_log_query_result = OperationLogService.get_operation_log_list_services(query_db, operation_log_query)
         # 分页操作
         operation_log_page_query_result = get_page_obj(operation_log_query_result, operation_log_page_query.page, operation_log_page_query.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=operation_log_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=operation_log_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/operation/delete", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
+@logController.post("/operation/delete", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
 @log_decorator(title='操作日志管理', business_type=3)
 async def delete_system_operation_log(request: Request, delete_operation_log: DeleteOperLogModel, query_db: Session = Depends(get_db)):
     try:
@@ -39,14 +41,14 @@ async def delete_system_operation_log(request: Request, delete_operation_log: De
             logger.log_info(delete_operation_log_result.message)
             return MyResponse(data=delete_operation_log_result, msg=delete_operation_log_result.message)
         else:
-            logger.warning(delete_operation_log_result.message)
+            logger.log_warning(delete_operation_log_result.message)
             return MyResponse(data="", msg=delete_operation_log_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/operation/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
+@logController.post("/operation/clear", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:remove'))])
 @log_decorator(title='操作日志管理', business_type=9)
 async def clear_system_operation_log(request: Request, clear_operation_log: ClearOperLogModel, query_db: Session = Depends(get_db)):
     try:
@@ -55,14 +57,14 @@ async def clear_system_operation_log(request: Request, clear_operation_log: Clea
             logger.log_info(clear_operation_log_result.message)
             return MyResponse(data=clear_operation_log_result, msg=clear_operation_log_result.message)
         else:
-            logger.warning(clear_operation_log_result.message)
+            logger.log_warning(clear_operation_log_result.message)
             return MyResponse(data="", msg=clear_operation_log_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.get("/operation/{oper_id}", response_model=OperLogModel, dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:query'))])
+@logController.get("/operation/{oper_id}", dependencies=[Depends(CheckUserInterfaceAuth('monitor:operlog:query'))])
 async def query_detail_system_operation_log(request: Request, oper_id: int, query_db: Session = Depends(get_db)):
     try:
         detail_operation_log_result = OperationLogService.detail_operation_log_services(query_db, oper_id)
@@ -81,13 +83,13 @@ async def export_system_operation_log_list(request: Request, operation_log_query
         operation_log_query_result = OperationLogService.get_operation_log_list_services(query_db, operation_log_query)
         operation_log_export_result = await OperationLogService.export_operation_log_list_services(request, operation_log_query_result)
         logger.log_info('导出成功')
-        return streaming_MyResponse(data=bytes2file_response(operation_log_export_result))
+        return StreamingResponse(content=bytes2file_response(operation_log_export_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/login/get", response_model=LoginLogPageObjectResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:list'))])
+@logController.post("/login/get", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:list'))])
 async def get_system_login_log_list(request: Request, login_log_page_query: LoginLogPageObject, query_db: Session = Depends(get_db)):
     try:
         login_log_query = LoginLogQueryModel(**login_log_page_query.dict())
@@ -95,14 +97,14 @@ async def get_system_login_log_list(request: Request, login_log_page_query: Logi
         login_log_query_result = LoginLogService.get_login_log_list_services(query_db, login_log_query)
         # 分页操作
         login_log_page_query_result = get_page_obj(login_log_query_result, login_log_page_query.page, login_log_page_query.page_size)
-        logger.log_info('获取成功')
-        return MyResponse(data=login_log_page_query_result, msg="获取成功")
+        
+        return MyResponse(data=login_log_page_query_result)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/login/delete", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
+@logController.post("/login/delete", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
 @log_decorator(title='登录日志管理', business_type=3)
 async def delete_system_login_log(request: Request, delete_login_log: DeleteLoginLogModel, query_db: Session = Depends(get_db)):
     try:
@@ -111,14 +113,14 @@ async def delete_system_login_log(request: Request, delete_login_log: DeleteLogi
             logger.log_info(delete_login_log_result.message)
             return MyResponse(data=delete_login_log_result, msg=delete_login_log_result.message)
         else:
-            logger.warning(delete_login_log_result.message)
+            logger.log_warning(delete_login_log_result.message)
             return MyResponse(data="", msg=delete_login_log_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/login/clear", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
+@logController.post("/login/clear", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:remove'))])
 @log_decorator(title='登录日志管理', business_type=9)
 async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLogModel, query_db: Session = Depends(get_db)):
     try:
@@ -127,14 +129,14 @@ async def clear_system_login_log(request: Request, clear_login_log: ClearLoginLo
             logger.log_info(clear_login_log_result.message)
             return MyResponse(data=clear_login_log_result, msg=clear_login_log_result.message)
         else:
-            logger.warning(clear_login_log_result.message)
+            logger.log_warning(clear_login_log_result.message)
             return MyResponse(data="", msg=clear_login_log_result.message)
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))
 
 
-@logController.post("/login/unlock", response_model=CrudLogResponse, dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:unlock'))])
+@logController.post("/login/unlock", dependencies=[Depends(CheckUserInterfaceAuth('monitor:logininfor:unlock'))])
 @log_decorator(title='登录日志管理', business_type=0)
 async def clear_system_login_log(request: Request, unlock_user: UnlockUser, query_db: Session = Depends(get_db)):
     try:
@@ -143,7 +145,7 @@ async def clear_system_login_log(request: Request, unlock_user: UnlockUser, quer
             logger.log_info(unlock_user_result.message)
             return MyResponse(data=unlock_user_result, msg=unlock_user_result.message)
         else:
-            logger.warning(unlock_user_result.message)
+            logger.log_warning(unlock_user_result.message)
             return MyResponse(data="", msg=unlock_user_result.message)
     except Exception as e:
         logger.exception(e)
@@ -158,7 +160,7 @@ async def export_system_login_log_list(request: Request, login_log_query: LoginL
         login_log_query_result = LoginLogService.get_login_log_list_services(query_db, login_log_query)
         login_log_export_result = LoginLogService.export_login_log_list_services(login_log_query_result)
         logger.log_info('导出成功')
-        return streaming_MyResponse(data=bytes2file_response(login_log_export_result))
+        return StreamingResponse(content=bytes2file_response(login_log_export_result))
     except Exception as e:
         logger.exception(e)
         return MyResponse(data="", msg=str(e))

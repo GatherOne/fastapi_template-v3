@@ -72,11 +72,11 @@ def get_page_obj(data_list: List, page: int, page_size: int):
     has_next = True if math.ceil(len(data_list) / page_size) > page else False
 
     result = dict(
-        rows=paginated_data,
-        page=page,
-        page_size=page_size,
+        data=paginated_data,
+        # page=page,
+        # page_size=page_size,
         total=len(data_list),
-        has_next=has_next
+        # has_next=has_next
     )
 
     return PageObjectResponse(**result)
