@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends
-from config.database import get_db
+from config.get_db import get_db
 from app.service.login_service import get_current_user, CurrentUserInfoServiceResponse
 from app.service.notice_service import *
 from app.entity.vo.notice_vo import *

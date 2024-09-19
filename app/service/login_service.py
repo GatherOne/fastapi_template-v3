@@ -15,7 +15,7 @@ from config.env import AppConfig, JwtConfig, RedisInitKeyConfig
 from utils.pwd_util import *
 from utils.response_util import *
 from utils.message_util import *
-from config.database import get_db
+from config.get_db import get_db
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login/loginByAccount")
 

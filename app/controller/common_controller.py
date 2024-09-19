@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from starlette.responses import StreamingResponse
 
 from config.env import CachePathConfig
-from config.database import get_db
+from config.get_db import get_db
 from app.service.login_service import get_current_user
 from app.service.common_service import *
 from app.service.config_service import ConfigService

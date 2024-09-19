@@ -33,13 +33,13 @@ class RedisUtil:
             if connection:
                 logger.log_info("redis连接成功")
             else:
-                logger.log_error("redis连接失败")
+                logger.error("redis连接失败")
         except AuthenticationError as e:
-            logger.log_error(f"redis用户名或密码错误，详细错误信息：{e}")
+            logger.error(f"redis用户名或密码错误，详细错误信息：{e}")
         except TimeoutError as e:
-            logger.log_error(f"redis连接超时，详细错误信息：{e}")
+            logger.error(f"redis连接超时，详细错误信息：{e}")
         except RedisError as e:
-            logger.log_error(f"redis连接错误，详细错误信息：{e}")
+            logger.error(f"redis连接错误，详细错误信息：{e}")
         return redis
 
     @classmethod

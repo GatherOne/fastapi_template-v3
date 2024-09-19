@@ -223,7 +223,7 @@ class SchedulerUtil:
                 job_args=job_args,
                 job_kwargs=job_kwargs,
                 job_trigger=job_trigger,
-                job_msg=job_message,
+                job_message=job_message,
                 status=status,
                 exception_info=exception_info
             )

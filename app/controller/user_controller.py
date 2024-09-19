@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi import Depends
 import base64
-from config.database import get_db
+from config.get_db import get_db
 from app.service.login_service import get_current_user
 from app.service.user_service import *
 from app.entity.vo.user_vo import *

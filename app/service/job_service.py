@@ -2,7 +2,7 @@ from app.entity.vo.job_vo import *
 from app.dao.job_dao import *
 from app.service.dict_service import Request, DictDataService
 from utils.common_util import export_list2excel
-from config.scheduler import SchedulerUtil
+from config.get_scheduler import SchedulerUtil
 
 
 class JobService:

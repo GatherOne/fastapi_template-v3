@@ -1,7 +1,7 @@
 from fastapi import Request
 from app.entity.vo.cache_vo import *
 from config.env import RedisInitKeyConfig
-from utils.redis_util import RedisUtil
+from config.get_redis import RedisUtil
 
 
 class CacheService:

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 import uvicorn
-from fastapi.exceptions import HTTPException
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from app.controller.login_controller import loginController
 from app.controller.captcha_controller import captchaController
@@ -19,9 +19,9 @@ from app.controller.server_controller import serverController
 from app.controller.cache_controller import cacheController
 from app.controller.common_controller import commonController
 from config.env import AppConfig
-from utils.redis_util import RedisUtil
+from config.get_redis import RedisUtil
 from config.database import init_create_table
-from config.scheduler import SchedulerUtil
+from config.get_scheduler import SchedulerUtil
 from utils.response_util import *
 from utils.log_util import logger
 from utils.common_util import worship
@@ -70,21 +70,26 @@ async def shutdown_event():
 # 自定义token检验异常
 @app.exception_handler(AuthException)
 async def auth_exception_handler(request: Request, exc: AuthException):
-    return MyResponse(data=exc.data, msg=exc.message)
+    return MyResponse(code=RET.USER_UNAUTHORIZED, msg=exc.message, data=exc.data)
 
 
 # 自定义权限检验异常
 @app.exception_handler(PermissionException)
 async def permission_exception_handler(request: Request, exc: PermissionException):
-    return MyResponse(data=exc.data, msg=exc.message)
+    return MyResponse(code=RET.PER_ERR, msg=exc.message, data=exc.data)
 
 
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.log_warning(exc.errors())
+    return MyResponse(code=RET.PARAM_ERR, msg=error_map[RET.PARAM_ERR])
+
+
+# 服务异常
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    return JSONResponse(
-        content=jsonable_encoder({"message": exc.detail, "code": exc.status_code}),
-        status_code=exc.status_code
-    )
+    logger.log_error(exc.detail)
+    return MyResponse(code=RET.SERVER_ERR, msg=error_map[RET.SERVER_ERR])
 
 
 app.include_router(loginController, prefix="/login", tags=['登录模块'])

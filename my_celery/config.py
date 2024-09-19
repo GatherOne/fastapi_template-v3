@@ -22,7 +22,7 @@ result_serializer = 'json'
 task_time_limit = 180
 # 为存储结果设置过期日期，默认1天过期。如果beat开启，Celery每天会自动清除。设为0，存储结果永不过期
 # result_expires = 300
-# Worker并发数量，一般默认CPU核数，可以不设置
+# Worker并发数量，一般默认核数，可以不设置
 worker_concurrency = 5
 # 每个worker执行了多少任务就会死掉，默认是无限的
 # 防止内存泄漏

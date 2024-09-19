@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from starlette.responses import StreamingResponse
 
-from config.database import get_db
+from config.get_db import get_db
 from app.service.login_service import get_current_user, CurrentUserInfoServiceResponse
 from app.service.job_service import *
 from app.service.job_log_service import *
